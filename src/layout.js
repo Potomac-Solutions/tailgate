@@ -58,6 +58,7 @@ const STYLE = `
   .steps3 > div { padding: 1.1rem 1.2rem; border-radius: var(--radius); background: var(--card); box-shadow: 0 0 0 1px var(--tg-line); }
   .steps3 h3 { margin: 0 0 0.3rem; } .steps3 p { margin: 0; color: var(--tg-muted); }
   .panel { display: grid; gap: 0.9rem; align-content: start; padding: 1.1rem 1.2rem; border-radius: var(--radius); background: var(--card); box-shadow: 0 0 0 1px var(--tg-line); }
+  .panel.filters { display: flex; }
   .notice { margin: 0; padding: 0.6rem 0.9rem; border-radius: 0.5rem; background: #fde4e1; color: #7a1f17; }
   .ok { margin: 0; padding: 0.6rem 0.9rem; border-radius: 0.5rem; background: #dff3e6; color: #13472a; }
   .account-form label, .admin label { display: grid; gap: 0.3rem; font-weight: 600; }
