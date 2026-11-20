@@ -143,7 +143,7 @@ export function layout({ title, path, person, banner = '', body, actionsScript, 
     ${banner}
     ${body}
   </main>
-  <footer class="site-foot">Tailgate is a demo by <a href="https://potomac.solutions">Potomac Solutions</a>, built with <a href="https://github.com/journey-to-code-org/zubra">Zubra</a> and Zubra UI. Checkout is in test mode; nothing here is really for sale.</footer>
+  <footer class="site-foot">Tailgate is a demo by <a href="https://potomac.solutions">Potomac Solutions</a>, built with <a href="https://github.com/zubra-js/zubra">Zubra</a> and Zubra UI. Checkout is in test mode; nothing here is really for sale.</footer>
   <toast-region></toast-region>
   ${actionsScript}
   ${SCRIPT(done)}
