@@ -2,7 +2,7 @@
 
 Farm to door. Farmers list what they have, neighbours fill one cart from several farms and pay once, and drivers carry each farm's order from the farm to the door. All three see each order move as it happens.
 
-Tailgate is a showcase for [Zubra](https://github.com/journey-to-code-org/zubra), built for [Potomac Solutions](https://potomac.solutions). It is one small Node server with no framework, no bundler and no separate database.
+Tailgate is a showcase for [Zubra](https://github.com/zubra-js/zubra), built for [Potomac Solutions](https://potomac.solutions). It is one small Node server with no framework, no bundler and no separate database.
 
 ## The screens
 
@@ -30,7 +30,7 @@ Tailgate is a showcase for [Zubra](https://github.com/journey-to-code-org/zubra)
 | Presence (`@zubra/sync`) | The shopper sees when the driver has their order open |
 | `@zubra/actions` | Adding to the cart, claiming a delivery, picking up and delivering are plain form posts to `'use server'` functions. They work with JavaScript off, and their code never reaches the browser |
 | [Potomac kit](https://github.com/Potomac-Solutions/kit) (private) | The commerce rules: `catalog` (what's for sale and how many are left), `cart`, `checkout` (stock from every farm taken at once, one charge, one order per farm), `pay` (charged at most once; its test provider), and `stages` (placed → claimed → picked up → delivered). `cart-panel` and `checkout-form` are the kit's components, loaded from the package (`createZubra({ packages })`) |
-| [Zubra UI](https://github.com/journey-to-code-org/zubra-ui) | The dashboards, charts, controls and themes: `dashboard-shell`, `stat-card`, `line-chart`, `donut-chart`, `bar-chart`, `kanban-column`, `step-indicator`, `status-badge`, `quantity-stepper`, `money-input`, `text-field`, `file-drop`, `color-swatches`, `choice-cards`, `segmented-control`, `user-avatar`, `action-button`, `alert-banner`, `empty-state`, `toast-region`, and five themes farmers choose from (Paper, Zinc, Candy, Midnight, Terminal) |
+| [Zubra UI](https://github.com/zubra-js/zubra-ui) | The dashboards, charts, controls and themes: `dashboard-shell`, `stat-card`, `line-chart`, `donut-chart`, `bar-chart`, `kanban-column`, `step-indicator`, `status-badge`, `quantity-stepper`, `money-input`, `text-field`, `file-drop`, `color-swatches`, `choice-cards`, `segmented-control`, `user-avatar`, `action-button`, `alert-banner`, `empty-state`, `toast-region`, and five themes farmers choose from (Paper, Zinc, Candy, Midnight, Terminal) |
 
 The rule behind the split: **Sync for what one person owns, Actions for what two people could both want.** A farmer's price and colours are theirs alone, so last-writer-wins is right. The last crate of squash, or a delivery two drivers tap at once, has to be decided by the server: a delivery is an action, and the squash is decided at checkout, where the whole cart's stock is taken in one step.
 
@@ -45,7 +45,7 @@ When the server has to decide something, it checks and writes in one synchronous
 The controls are Zubra UI components, installed as `.zb` source with the shadcn CLI into `src/components/`, beside Tailgate's own. Nothing comes from npm:
 
 ```sh
-R=https://journey-to-code-org.github.io/zubra-ui/r
+R=https://zubra-js.github.io/zubra-ui/r
 for c in quantity-stepper money-input step-indicator action-button alert-banner empty-state dashboard-shell \
   stat-card bar-chart donut-chart line-chart kanban-column file-drop color-swatches choice-cards \
   segmented-control text-field user-avatar toast-region status-badge; do npx shadcn add $R/src/$c.json --yes; done
