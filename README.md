@@ -56,7 +56,7 @@ Add another the same way, then import it from the component that uses it (`impor
 
 ## Run it
 
-Needs Node 22.13 or later (Node 24 recommended). `npm install` fetches the Potomac kit from its private GitHub repository, so it needs an account with read access to `Potomac-Solutions/kit`.
+Needs Node 26. `npm install` fetches the Potomac kit from its private GitHub repository, so it needs an account with read access to `Potomac-Solutions/kit`.
 
 ```sh
 npm install
