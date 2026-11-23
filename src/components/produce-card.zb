@@ -22,7 +22,8 @@
   const few = qty <= 3
 </script>
 <style>
-  article { height: 100%; display: grid; grid-template-rows: auto auto 1fr auto; gap: 0.4rem; padding: 1rem 1.1rem 1.1rem; border-radius: var(--radius); background: var(--card); box-shadow: 0 0 0 1px var(--border); border-top: 4px solid var(--farm, var(--primary)); }
+  article { height: 100%; display: flex; flex-direction: column; gap: 0.4rem; overflow: hidden; padding: 1rem 1.1rem 1.1rem; border-radius: var(--radius); background: var(--card); box-shadow: 0 0 0 1px var(--border); border-top: 4px solid var(--farm, var(--primary)); }
+  .pic { display: block; width: calc(100% + 2.2rem); max-width: none; margin: -1rem -1.1rem 0.5rem; aspect-ratio: 4 / 3; object-fit: cover; background: var(--muted); }
   .farm { display: flex; align-items: center; gap: 0.45rem; margin: 0; font-size: 0.875rem; color: var(--muted-foreground); text-decoration: none; }
   .farm img { width: 1.5rem; height: 1.5rem; border-radius: 50%; object-fit: cover; }
   .farm:hover { color: var(--farm, var(--foreground)); }
@@ -30,12 +31,13 @@
   .price { margin: 0; display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
   .price strong { font-size: 1.15rem; font-variant-numeric: tabular-nums; }
   .price span { color: var(--muted-foreground); }
-  form { display: flex; gap: 0.75rem; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-top: 0.4rem; }
+  form { display: flex; gap: 0.75rem; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-top: auto; padding-top: 0.4rem; }
   alert-banner { flex-basis: 100%; }
-  .left { margin: 0; color: var(--muted-foreground); font-size: 0.9rem; }
+  .left { margin: auto 0 0; color: var(--muted-foreground); font-size: 0.9rem; }
 </style>
-<produce-card farm="" item="" name="" unit="" price="" qty={0} farm-name="" farm-color="" farm-logo="" show-farm={true} can-order={false}>
+<produce-card farm="" item="" name="" unit="" price="" qty={0} farm-name="" farm-color="" farm-logo="" photo="" show-farm={true} can-order={false}>
   <article style={{ '--farm': farmColor || null }}>
+    <img zb-if={photo} class="pic" src={photo} alt="" loading="lazy" decoding="async">
     <a zb-if={showFarm} class="farm" href={`/farms/${farm}`}>
       <zb-if test={farmLogo}><img src={farmLogo} alt=""><zb-else><user-avatar name={farmName} size="sm"></user-avatar></zb-else></zb-if>
       {farmName}
