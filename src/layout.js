@@ -1,3 +1,4 @@
+import { CHART_CSS } from '@potomac-solutions/kit/charts';
 // The page around the components: Tailgate's own look, the header, toasts, and the connection to
 // the Sync log. Tailgate's frame stays cool and quiet so each farm's own colours carry the market.
 export const escape = (value) =>
@@ -23,6 +24,46 @@ const fonts = [
 ];
 
 const STYLE = `
+  .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 1rem; }
+  .stack { display: grid; gap: 0.75rem; }
+  .admin { display: grid; grid-template-columns: 13rem 1fr; gap: 1.5rem; align-items: start; }
+  .admin-nav { position: sticky; top: 1rem; display: grid; gap: 0.15rem; padding: 0.75rem; border-radius: var(--radius); background: var(--card); box-shadow: 0 0 0 1px var(--border); }
+  .admin-nav a { padding: 0.45rem 0.6rem; border-radius: 0.4rem; text-decoration: none; font-weight: 600; }
+  .admin-nav a[aria-current] { background: var(--muted); color: var(--primary); }
+  .admin-nav small { padding: 0.6rem 0.6rem 0.2rem; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.72rem; }
+  .admin-body { display: grid; gap: 1.25rem; min-width: 0; }
+  @media (max-width: 52rem) { .admin { grid-template-columns: 1fr; } .admin-nav { position: static; grid-auto-flow: column; overflow-x: auto; } .admin-nav small { display: none; } }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 0.75rem; }
+  .tile { padding: 0.9rem 1rem; border-radius: var(--radius); background: var(--card); box-shadow: 0 0 0 1px var(--border); }
+  .tile span { display: block; color: var(--muted-foreground); font-size: 0.85rem; font-weight: 600; }
+  .tile strong { display: block; font-size: 1.7rem; line-height: 1.2; }
+  .tile small { color: var(--muted-foreground); }
+  .filters { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: end; }
+  .filters label { font-size: 0.9rem; }
+  .table-wrap { overflow-x: auto; }
+  .badge { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 999px; background: var(--muted); font-size: 0.8rem; font-weight: 700; }
+  .badge.booked { background: #e3eef7; color: #163e5c; }
+  .badge.cancelled, .badge.off { background: #fde4e1; color: #7a1f17; }
+  .badge.past, .badge.handled { background: #dff3e6; color: #13472a; }
+  .muted { color: var(--muted-foreground); }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .pager { display: flex; gap: 1rem; align-items: center; }
+  main.page.wide { width: min(76rem, 100% - 2 * clamp(1rem, 4vw, 2.5rem)); }
+  .panel { display: grid; gap: 0.9rem; align-content: start; padding: 1.1rem 1.2rem; border-radius: var(--radius); background: var(--card); box-shadow: 0 0 0 1px var(--tg-line); }
+  .panel.filters { display: flex; }
+  @media (max-width: 26rem) { .panel.filters { flex-wrap: wrap; } }
+  main.page > *, .admin > *, .admin-body > * { min-width: 0; }
+  .admin-body .panel > * { min-width: 0; max-width: 100%; }
+  .hint { overflow-wrap: anywhere; }
+  .notice { margin: 0; padding: 0.6rem 0.9rem; border-radius: 0.5rem; background: #fde4e1; color: #7a1f17; }
+  .ok { margin: 0; padding: 0.6rem 0.9rem; border-radius: 0.5rem; background: #dff3e6; color: #13472a; }
+  .account-form label, .admin label { display: grid; gap: 0.3rem; font-weight: 600; }
+  .account-form input, .admin input, .admin select, .admin textarea { font: inherit; padding: 0.55rem 0.7rem; border-radius: 0.5rem; border: 1px solid var(--tg-line); background: #fff; color: inherit; }
+  .account-form button, .admin button, a.button { font: inherit; font-weight: 700; padding: 0.6rem 1.05rem; border: 0; border-radius: 0.5rem; background: var(--tg-pine); color: #fff; cursor: pointer; text-decoration: none; justify-self: start; }
+  .admin .button.light, .account-form .button.light, a.button.light { background: var(--muted); color: var(--tg-ink); }
+  .admin table, .account table { width: 100%; border-collapse: collapse; } .admin th, .admin td, .account th, .account td { padding: 0.5rem; text-align: left; border-bottom: 1px solid var(--tg-line); vertical-align: top; }
+  .badge.placed { background: #e3eef7; color: #163e5c; } .badge.claimed, .badge.picked { background: #fff1d6; color: #6b4300; } .badge.delivered { background: #dff3e6; color: #13472a; }
+
   ${fonts.map(([family, weight, src]) => `@font-face { font-family: "${family}"; font-weight: ${weight}; font-display: swap; src: url(${src}) format("woff2"); }`).join('\n  ')}
   :root {
     --tg-ground: #eef2ef; --tg-ink: #1e2b27; --tg-line: #c5cec9; --tg-pine: #2e5e4e; --tg-amber: #e3a21a; --tg-muted: #56655f;
@@ -39,7 +80,7 @@ const STYLE = `
   h1, main.page h2, .app-body h2 { font-family: var(--font-heading); font-weight: 700; line-height: 1.05; letter-spacing: -0.005em; margin: 0; }
   main.page h1 { font-size: clamp(2.25rem, 5vw, 3.5rem); }
   main.page h2 { font-size: 1.75rem; }
-  a:not(.action-button) { color: inherit; }
+  a:where(:not(.action-button)) { color: inherit; }
   :focus-visible { outline: 3px solid var(--tg-amber); outline-offset: 2px; }
   .skip { position: absolute; left: 0.5rem; top: -4rem; z-index: 10; padding: 0.6rem 1rem; border-radius: var(--radius); background: var(--tg-amber); color: var(--tg-ink); font-weight: 700; }
   .skip:focus { top: 0.5rem; }
@@ -87,6 +128,7 @@ const STYLE = `
   .hero h1 em { display: block; font-style: normal; color: var(--tg-amber); }
   .hero .lede { color: #e6eeea; font-size: clamp(1.15rem, 2.2vw, 1.4rem); max-width: 34rem; margin-top: 1.1rem; }
   .hero .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.75rem; }
+  .hero .also { margin: 1.1rem 0 0; color: #d5e0da; }
   .hero-strip { border-top: 1px solid rgb(255 255 255 / 0.2); background: rgb(15 26 22 / 0.6); backdrop-filter: blur(6px); }
   .hero-strip .wrap { display: flex; flex-wrap: wrap; gap: 0.3rem 2.5rem; padding-block: 0.9rem; font-weight: 600; }
   .hero-strip p { margin: 0; }
@@ -176,13 +218,13 @@ function head(title, hero = '') {
   ${hero ? `<link rel="preload" href="${hero}" as="image" fetchpriority="high">
   ` : ''}<link rel="stylesheet" href="/styles/theme.css">
   ${['paper', 'zinc', 'candy', 'midnight', 'terminal'].map((theme) => `<link rel="stylesheet" href="/styles/${theme}.css">`).join('\n  ')}
-  <style>${STYLE}</style>
+  <style>${STYLE}${CHART_CSS}</style>
 </head>`;
 }
 
 /** A public page: the header, the page, a footer. */
-export function layout({ title, path, person, banner = '', body, actionsScript, done, avatar = '', cartCount = 0, landing = false, hero = '' }) {
-  const nav = [['/', 'Market'], ...(person?.role === 'customer' ? [['/cart', cartCount ? `Cart (${cartCount})` : 'Cart'], ['/orders', 'My orders']] : []), ...(person?.role === 'farmer' ? [['/farm', 'My farm']] : []), ...(person?.role === 'driver' ? [['/drive', 'My deliveries']] : [])];
+export function layout({ title, path, person, banner = '', body, actionsScript, done, avatar = '', cartCount = 0, staff = false, wide = false, landing = false, hero = '' }) {
+  const nav = [['/', 'Market'], ...(person?.role === 'customer' ? [['/cart', cartCount ? `Cart (${cartCount})` : 'Cart'], ['/orders', 'My orders']] : []), ...(person?.role === 'farmer' ? [['/farm', 'My farm']] : []), ...(person?.role === 'driver' ? [['/drive', 'My deliveries']] : []), ...(person?.account ? [['/account', 'Your account']] : []), ...(staff ? [['/admin', 'Admin']] : [])];
   return `${head(title, hero)}
 <body>
   <a class="skip" href="#main">Skip to the page</a>
@@ -191,11 +233,11 @@ export function layout({ title, path, person, banner = '', body, actionsScript, 
     <nav class="site-nav" aria-label="Main">${nav.map(([href, label]) => `<a href="${href}"${path === href ? ' aria-current="page"' : ''}>${label}</a>`).join('')}</nav>
     <div class="me">${
       person
-        ? `${avatar}<span class="who"><strong>${escape(person.name)}</strong><small>${ROLE[person.role]}</small></span><a class="switch" href="/start">Switch</a>`
-        : `<a class="button-light" href="/start">Choose who you are</a>`
+        ? `${avatar}<span class="who"><strong>${escape(person.name)}</strong><small>${ROLE[person.role]}</small></span>${person.account ? '<a class="switch" href="/account">Account</a>' : '<a class="switch" href="/start">Switch</a>'}`
+        : `<a class="switch" href="/account/sign-in">Sign in</a> <a class="button-light" href="/start">Choose who you are</a>`
     }</div>
   </header>
-  <main id="main" class="page${landing ? ' landing' : ''}">
+  <main id="main" class="page${wide ? ' wide' : ''}${landing ? ' landing' : ''}">
     ${banner ? (landing ? `<div class="wrap said">${banner}</div>` : banner) : ''}
     ${body}
   </main>

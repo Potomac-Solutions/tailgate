@@ -20,12 +20,15 @@ const shots = args.includes('--shots') ? args[args.indexOf('--shots') + 1] : '';
 const base = (args.find((arg) => /^https?:/.test(arg)) ?? 'http://localhost:3000').replace(/\/$/, '');
 const WIDTHS = [320, 375, 768, 1280, 1920];
 
-// Tailgate has no accounts yet: each role picks who they are at /start, as a visitor does.
+// Against the demo (`npm run demo`). The demo's people are picked at /start, as a visitor does;
+// the account and the admin sign in.
 const ROLES = [
-  { name: 'guest', routes: ['/', '/start', '/farms/hilltop'] },
+  { name: 'guest', routes: ['/', '/start', '/farms/hilltop', '/account/sign-in', '/account/sign-up', '/account/forgot'] },
   { name: 'shopper', as: 'Shop as Rosa', routes: ['/', '/farms/bearrun', '/cart', '/orders'] },
+  { name: 'account', signIn: ['/account/sign-in', 'riley@example.com', 'tailgate-shopper-demo'], routes: ['/', '/account', '/orders'] },
   { name: 'farmer', as: 'Sell as Dana', routes: ['/farm', '/farm/stock', '/farm/orders', '/farm/storefront'] },
   { name: 'driver', as: 'Drive as Jules', routes: ['/drive', '/drive/earnings'] },
+  { name: 'owner', signIn: ['/admin', 'owner@example.com', 'tailgate-owner-demo'], routes: ['/admin', '/admin/orders', '/admin/farms', '/admin/drivers', '/admin/shoppers', '/admin/reports', '/admin/outbox'] },
 ];
 
 /** Runs in the page: structure, labels and contrast. Returns a list of problems. */
@@ -122,6 +125,13 @@ for (const scheme of ['light', 'dark']) {
     const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, colorScheme: scheme, reducedMotion: 'reduce' });
     const page = await context.newPage();
     const routes = [...role.routes];
+    if (role.signIn) {
+      await page.goto(base + role.signIn[0]);
+      await page.fill('input[name=email]', role.signIn[1]);
+      await page.fill('input[name=password]', role.signIn[2]);
+      await page.click('main button[type=submit]');
+      await page.waitForLoadState('networkidle');
+    }
     if (role.as) {
       await page.goto(base + '/start');
       await page.click(`button:has-text("${role.as}")`);
