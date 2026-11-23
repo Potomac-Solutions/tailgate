@@ -21,6 +21,7 @@ import { money } from './src/account.js';
 import { sessions } from './src/session.js';
 import { DELIVERY_CENTS } from './src/seed.js';
 import { createNotices } from '@potomac-solutions/kit/notice';
+import { lockedStaff, lockedCustomers, staffSignIn, guestSignIn, nightly } from './src/demo.js';
 import { createCustomers } from '@potomac-solutions/kit/customers';
 import { createStaff } from '@potomac-solutions/kit/staff';
 import { staffPages, clientAddress } from '@potomac-solutions/kit/staff/pages';
@@ -87,7 +88,7 @@ function assets() {
   return files;
 }
 
-export async function createApp({ db = join(process.env.DATA_DIR ?? here, 'tailgate.db'), cache = true, secret = process.env.SESSION_SECRET, staffCost, now = Date.now } = {}) {
+export async function createApp({ db = join(process.env.DATA_DIR ?? here, 'tailgate.db'), cache = true, secret = process.env.SESSION_SECRET, staffCost, now = Date.now , demo = process.env.DEMO === '1' } = {}) {
   if (!secret) {
     if (process.env.NODE_ENV === 'production') throw new Error('Set SESSION_SECRET.');
     // The kit signs nothing with a secret under 32 characters.
@@ -99,8 +100,11 @@ export async function createApp({ db = join(process.env.DATA_DIR ?? here, 'tailg
   const cost = staffCost ? { cost: staffCost } : {};
   // Shoppers who make an account (kit/customers), and the people who run the market (kit/staff):
   // both in the market's own log, in collections no page can read.
-  const customers = createCustomers({ store: market.store, secure: production, now, ...cost });
-  const staff = createStaff({ store: market.store, secure: production, now, ...cost });
+  // The public demo (src/demo.js) refuses changes to its sign-ins.
+  const kitCustomers = createCustomers({ store: market.store, secure: production, now, ...cost });
+  const customers = demo ? lockedCustomers(kitCustomers) : kitCustomers;
+  const kitStaff = createStaff({ store: market.store, secure: production, now, ...cost });
+  const staff = demo ? lockedStaff(kitStaff) : kitStaff;
   market.names((id) => customers.get(id)?.name ?? '');
   /**
    * Who is asking, from a Cookie header: a shopper signed in to their account, or the demo person
@@ -363,7 +367,7 @@ export async function createApp({ db = join(process.env.DATA_DIR ?? here, 'tailg
         }
         if (url.pathname === '/account/sign-in') {
           const signed = await customers.signIn(form.get('email'), form.get('password'), { client: clientAddress(req, { proxies }) });
-          if (signed.error) return show('Sign in', accountPages.signIn({ problem: problem(signed.error === 'locked' ? 'Too many tries. Wait 15 minutes, or reset your password.' : 'That email and password don’t match.'), email: String(form.get('email') ?? '') }), 401);
+          if (signed.error) return show('Sign in', (demo ? `<div class="auth">${guestSignIn(escape)}</div>` : '') + accountPages.signIn({ problem: problem(signed.error === 'locked' ? 'Too many tries. Wait 15 minutes, or reset your password.' : 'That email and password don’t match.'), email: String(form.get('email') ?? '') }), 401);
           res.setHeader('set-cookie', signed.cookie);
           return back(res, '/account');
         }
@@ -400,7 +404,8 @@ export async function createApp({ db = join(process.env.DATA_DIR ?? here, 'tailg
           const one = action && customers.get(action[1]);
           if (one && action[2] === 'disabled') {
             const off = form.get('disabled') === 'yes';
-            await customers.setDisabled(one.customer, off);
+            const changed = await customers.setDisabled(one.customer, off);
+            if (changed?.error) return back(res, withProblem(`/admin/customers/${one.customer}`, changed));
             await market.audit(who, `${off ? 'turned off' : 'turned back on'} ${one.name}’s account`, one.customer);
             return back(res, withDone(`/admin/shoppers/${one.customer}`, off ? 'Turned off and signed out everywhere.' : 'Turned back on.'));
           }
@@ -463,7 +468,7 @@ export async function createApp({ db = join(process.env.DATA_DIR ?? here, 'tailg
 
       // A shopper's account pages.
       if (url.pathname === '/account') return account ? page(req, res, url, { title: 'Your account', person, p, body: accountPages.account({ market, person, said: said(url) }) }) : back(res, '/account/sign-in');
-      if (url.pathname === '/account/sign-in') return account ? back(res, '/account') : page(req, res, url, { title: 'Sign in', person, p, body: accountPages.signIn({ problem: said(url) }) });
+      if (url.pathname === '/account/sign-in') return account ? back(res, '/account') : page(req, res, url, { title: 'Sign in', person, p, body: (demo ? `<div class="auth">${guestSignIn(escape)}</div>` : '') + accountPages.signIn({ problem: said(url) }) });
       if (url.pathname === '/account/sign-up') return account ? back(res, '/account') : page(req, res, url, { title: 'Make an account', person, p, body: accountPages.signUp() });
       if (url.pathname === '/account/forgot') return page(req, res, url, { title: 'Reset your password', person, p, body: accountPages.forgot() });
       if (url.pathname === '/account/reset') {
@@ -474,7 +479,7 @@ export async function createApp({ db = join(process.env.DATA_DIR ?? here, 'tailg
       // The market's admin: its staff only; reports and the outbox for owners.
       if (url.pathname === '/admin' || url.pathname.startsWith('/admin/')) {
         const show = (title, body, status) => page(req, res, url, { title, person, p, body, wide: true, status });
-        if (!atDesk) return show('Sign in', staffSite.signIn(url));
+        if (!atDesk) return show('Sign in', (demo ? `<div class="auth">${staffSignIn(escape)}</div>` : '') + staffSite.signIn(url));
         const bar = staffSite.bar(who);
         if (url.pathname === '/admin') return show('Overview', admin.dashboard({ who, owner, bar }));
         if (url.pathname === '/admin/orders') return show('Orders', admin.orders({ url, owner, bar }));
@@ -626,12 +631,13 @@ ${past.length ? `<section><div class="section-head"><h2>Earlier orders</h2></div
   });
 
   server.on('close', () => market.close());
-  return Object.assign(server, { market, customers, staff, sent: mail.sent });
+  return Object.assign(server, { demo, market, customers, staff, sent: mail.sent });
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const port = Number(process.env.PORT ?? 3000);
   const server = await createApp();
   if (server.staff.needsOwner()) console.log(`Set up the market's first admin (works once, for a day): http://localhost:${port}/staff/accept?token=${await server.staff.setup()}`);
+  if (server.demo) nightly();
   server.listen(port, '0.0.0.0', () => console.log(`Tailgate on http://localhost:${port}`));
 }

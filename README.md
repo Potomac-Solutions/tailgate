@@ -89,6 +89,40 @@ Start at `/start` and pick who you are, or make a shopper account. A fresh marke
 6. **Run the market.** At `/admin`, sign in as the owner: sales across every farm, orders waiting for a driver, how long deliveries take, what's running low, every order (searchable, as CSV), each farm, driver and shopper, and the reports.
 7. **Without JavaScript** (turn it off in the browser's settings), the market, the cart and checkout all still work.
 
+## The public demo
+
+With `DEMO=1` the server is a demo anyone can try, back office included (`src/demo.js`):
+
+- It runs on the seeded data (`npm run demo` seeds fresh, then serves), so the admin, reports and screens are full from the first visit.
+- The sign-in pages show the demo sign-ins:
+
+  | Who | Email | Password |
+  | --- | --- | --- |
+  | Owner | `owner@example.com` | `tailgate-owner-demo` |
+  | Support staff | `support@example.com` | `tailgate-staff-demo` |
+  | Shopper | `riley@example.com` | `tailgate-shopper-demo` |
+
+- Nobody can change a demo account: not its password, roles, name or reset link, and nobody can turn it off. Everything else a visitor does lasts until the reset, including people they invite.
+- Once a day at 4 am New York time the server exits, and Railway's "always" restart policy starts it again with `npm run demo`: fresh data dated today, and the same sign-ins.
+
+## Deploy the demo on Railway
+
+`railway.json` sets the build, the start command (`npm run demo`), the health check (`/health`) and the restart policy (`ALWAYS`).
+
+1. In Railway, make a service from `Potomac-Solutions/tailgate`, from the `main` branch. No volume is needed: every start seeds fresh.
+2. Set its variables:
+
+   ```
+   DEMO=1
+   NODE_ENV=production
+   SESSION_SECRET=<a long random string>
+   TRUST_PROXIES=1
+   PUBLIC_URL=https://<the demo's address>
+   ```
+3. Give it a domain under **Settings → Networking**, and keep it at one replica.
+
+For a real business, leave out `DEMO`, set `DATA_DIR` to a mounted volume, start it with `npm start`, and claim the first owner's setup link from the deploy log.
+
 ## What the tests prove
 
 1. Without JavaScript, the market is complete, in each farm's order, and an item goes into the cart, through checkout and onto My orders, and each page says what happened.
