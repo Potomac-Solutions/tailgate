@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test": "node --test test/app.test.js"
+    "test": "node --test test/app.test.js",
+    "design-check": "node scripts/design-check.js"
   },
   "dependencies": {
     "@fontsource/barlow-condensed": "^5.3.0",

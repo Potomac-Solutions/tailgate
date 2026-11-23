@@ -26,7 +26,7 @@
   </div>
   <div class="grid">
     <zb-each items={shown} as="listing" key={`${listing.farm}/${listing.item}`}>
-      <produce-card farm={listing.farm} item={listing.item} name={listing.name} unit={listing.unit} price={listing.price} qty={listing.qty} farm-name={listing.farmName} farm-color={listing.farmColor} farm-logo={listing.farmLogo} can-order={canOrder}></produce-card>
+      <produce-card farm={listing.farm} item={listing.item} name={listing.name} unit={listing.unit} price={listing.price} qty={listing.qty} farm-name={listing.farmName} farm-color={listing.farmColor} farm-logo={listing.farmLogo} photo={listing.photo} can-order={canOrder}></produce-card>
     </zb-each>
   </div>
   <empty-state zb-if={shown.length === 0} heading="Nothing for sale right now">Farmers add what they have from their dashboard. Check back this afternoon.</empty-state>

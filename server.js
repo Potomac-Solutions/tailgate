@@ -10,7 +10,7 @@
 //   (src/market.js), shown by the kit's cart-panel and checkout-form from the package.
 // - The controls, charts, dashboards and themes are Zubra UI, installed with `npx shadcn add`.
 import { createServer } from 'node:http';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -18,8 +18,10 @@ import { createZubra } from '@zubra/server';
 import { createActions } from '@zubra/actions';
 import { createMarket, THEMES } from './src/market.js';
 import { sessions } from './src/session.js';
+import { DELIVERY_CENTS } from './src/seed.js';
 import { createNotices } from '@potomac-solutions/kit/notice';
 import { layout, appLayout, escape, DONE } from './src/layout.js';
+import { landing } from './src/landing.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const components = join(here, 'src', 'components');
@@ -47,9 +49,23 @@ function render(p, name, props = {}, slots = {}) {
   return html;
 }
 
-/** Static files: Zubra UI's themes and the two typefaces. */
+/** Photographs: files in public/photos/, as .jpg or .webp. `photo('hero')` is its address, or '' if there is none. */
+const photos = new Map();
+const photo = (name) => photos.get(name) ?? '';
+/** A listing's photograph is named for its farm and item: public/photos/hilltop-eggs.jpg. */
+const withPhotos = (items) => items.map((listing) => ({ ...listing, photo: photo(`${listing.farm}-${listing.item}`) }));
+
+/** Static files: Zubra UI's themes, the two typefaces and the photographs. */
 function assets() {
   const files = new Map();
+  const dir = join(here, 'public', 'photos');
+  for (const name of existsSync(dir) ? readdirSync(dir) : []) {
+    const match = name.match(/^([a-z0-9-]+)\.(jpg|webp)$/);
+    if (!match) continue;
+    const body = readFileSync(join(dir, name));
+    files.set(`/photos/${name}`, [match[2] === 'jpg' ? 'image/jpeg' : 'image/webp', body]);
+    photos.set(match[1], `/photos/${name}?v=${body.length.toString(36)}`);
+  }
   files.set('/styles/theme.css', ['text/css', readFileSync(join(components, 'zubra', 'theme.css'))]);
   for (const theme of THEMES) files.set(`/styles/${theme}.css`, ['text/css', readFileSync(join(components, 'zubra', 'themes', `${theme}.css`))]);
   for (const [pkg, prefix] of [['@fontsource/barlow-condensed', 'barlow-condensed'], ['@fontsource/source-sans-3', 'source-sans-3']]) {
@@ -116,12 +132,12 @@ export async function createApp({ db = join(process.env.DATA_DIR ?? here, 'tailg
     return { banner, done };
   }
 
-  function page(req, res, url, { title, person, body, p }) {
+  function page(req, res, url, { title, person, body, p, wide = false }) {
     const { banner, done } = outcome(req, res, p, url);
     const avatar = person ? p.render('user-avatar', { name: person.name, size: 'sm' }) : '';
     const toasts = p.render('toast-region', {});
     const cartCount = person?.role === 'customer' ? market.cart(person).count : 0;
-    const html = layout({ title, path: url.pathname, person, banner, body, done, avatar, cartCount, actionsScript: actions.script() }).replace('<toast-region></toast-region>', toasts);
+    const html = layout({ title, path: url.pathname, person, banner, body, done, avatar, cartCount, landing: wide, hero: wide ? photo('hero') : '', actionsScript: actions.script() }).replace('<toast-region></toast-region>', toasts);
     send(res, 200, p.finish(html));
   }
 
@@ -183,7 +199,7 @@ export async function createApp({ db = join(process.env.DATA_DIR ?? here, 'tailg
           { value: '/start', label: 'Switch person' },
         ],
       },
-      { default: `<div class="app-body">${content}</div>`, actions: `<a class="shell-actions-link" href="/farms/${person.farm}">See my stall</a>` },
+      { default: `<main id="main" class="app-body">${content}</main>`, actions: `<a class="shell-actions-link" href="/farms/${person.farm}">See my stall</a>` },
     );
   }
 
@@ -236,7 +252,7 @@ export async function createApp({ db = join(process.env.DATA_DIR ?? here, 'tailg
     render(p, 
       'dashboard-shell',
       { product: 'Tailgate for drivers', heading, nav: DRIVE_NAV, current, user: person.name.split(' ')[0], menu: [{ value: '/', label: 'Open the market' }, { value: '/start', label: 'Switch person' }] },
-      { default: `<div class="app-body">${content}</div>`, actions: `<a class="shell-actions-link" href="/">Market</a>` },
+      { default: `<main id="main" class="app-body">${content}</main>`, actions: `<a class="shell-actions-link" href="/">Market</a>` },
     );
 
   function deliveries(p, person) {
@@ -346,13 +362,21 @@ export async function createApp({ db = join(process.env.DATA_DIR ?? here, 'tailg
 
       if (url.pathname === '/') {
         const farms = market.farms.map((farm) => ({ value: farm.id, label: market.brand(farm.id).name }));
+        const shopper = person?.role === 'customer';
         return page(req, res, url, {
           title: 'Market',
           person,
           p,
-          body: `<section><h1>This week at the market</h1><p class="lede">${market.farms.length} farms in the mountains of Western Maryland and West Virginia. Order by noon and a neighbour brings it to your door the same day.</p></section>
-<section aria-labelledby="stalls"><div class="section-head"><h2 id="stalls">The farms</h2><p>Each farm runs its own stall.</p></div><div class="stalls">${market.farms.map((farm) => stall(p, farm.id)).join('')}</div></section>
-<section aria-labelledby="fresh"><div class="section-head"><h2 id="fresh">For sale today</h2>${person?.role === 'customer' ? '' : '<p><a href="/start">Choose a shopper</a> to order.</p>'}</div>${p.render('market-grid', { items: market.catalog(), farms, canOrder: person?.role === 'customer' })}</section>`,
+          wide: true,
+          body: landing({
+            photo,
+            shopper,
+            signedIn: Boolean(person),
+            farms: market.farms.length,
+            fee: `$${DELIVERY_CENTS / 100}`,
+            stalls: market.farms.map((farm) => stall(p, farm.id)).join(''),
+            grid: p.render('market-grid', { items: withPhotos(market.catalog()), farms, canOrder: shopper }),
+          }),
         });
       }
 
@@ -360,7 +384,7 @@ export async function createApp({ db = join(process.env.DATA_DIR ?? here, 'tailg
       if (storefront) {
         const b = market.brand(storefront[1]);
         if (!b) return send(res, 404, 'No such farm');
-        const items = market.catalog(b.farm);
+        const items = withPhotos(market.catalog(b.farm));
         const cards = items.map((listing) => p.render('produce-card', { ...listing, showFarm: false, canOrder: person?.role === 'customer' })).join('');
         return page(req, res, url, {
           title: b.name,

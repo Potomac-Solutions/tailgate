@@ -21,6 +21,12 @@ Tailgate is a showcase for [Zubra](https://github.com/zubra-js/zubra), built for
 | Driver | **Deliveries** (`/drive`) | Open deliveries to claim, yours in progress with directions, what you've earned |
 | Driver | **Earnings** (`/drive/earnings`) | Pay and deliveries this week, by day |
 
+## How it looks
+
+- **The market** (`/`) opens on a full-screen photograph, one line and one button (**Shop this week's market**), then how it works, the farms' stalls, everything for sale with a photograph of each, and a word for farmers and drivers. A shopper who is already signed in gets a short hero and goes straight to the food. `src/landing.js` lays it out; its styles are in `src/layout.js` with the rest.
+- **Photographs** are files in `public/photos/`, as `.jpg` or `.webp`: `hero`, `porch`, `road`, and one per listing named for its farm and item (`hilltop-eggs`). A listing with no file shows none. Replace a file and restart. The ones here were generated for these made-up farms; see `public/photos/README.md`.
+- **Checks.** With the app running, `npm run design-check` walks every page as a guest, a shopper, a farmer and a driver, at five widths.
+
 ## What each part does
 
 | Zubra piece | Job in Tailgate |
