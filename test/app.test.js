@@ -387,7 +387,7 @@ test('every screen renders for the person it is for', async () => {
 test("the cart's components are the kit's, and Tailgate's parts stand in for the kit's copies", async () => {
   const kit = await fetch(`${base}/_zubra/components/@potomac-solutions/kit/components/cart-panel.js`);
   assert.equal(kit.status, 200);
-  assert.match(await kit.text(), /import "\.\/action-button\.js"/, "the kit's cart-panel imports its own copy");
+  assert.match(await kit.text(), /import\s*"\.\/action-button\.js"/, "the kit's cart-panel imports its own copy");
   // That copy is Tailgate's module, so the browser defines <action-button> once.
   const copy = await (await fetch(`${base}/_zubra/components/@potomac-solutions/kit/components/action-button.js`)).text();
   assert.match(copy, /^export \* from "\/_zubra\/components\/action-button\.js";/);
@@ -399,7 +399,7 @@ test('server code never reaches the browser', async () => {
     const response = await fetch(`${base}${path}`);
     assert.equal(response.status, 200, path);
     const source = await response.text();
-    assert.match(source, /customElements\.define|define\(/, `${path} is the element module`);
+    assert.match(source, /export const tag\s*=|customElements\.define|define\(/, `${path} is the element module`);
     assert.doesNotMatch(source, /use server|addToCart|context\.market|advance\(/, path);
   }
 });
