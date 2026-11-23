@@ -14,7 +14,7 @@ let server;
 let base;
 
 before(async () => {
-  server = await createApp({ staffCost: COST, db: join(dir, 'shop.db'), cache: false, secret: 'test' });
+  server = await createApp({ staffCost: COST, db: join(dir, 'shop.db'), cache: false, secret: 'test-secret-of-at-least-thirty-two-characters' });
   await server.staff.accept(await server.staff.setup(), OWNER);
   const owner = server.staff.list().find((one) => one.email === OWNER.email);
   await server.staff.accept((await server.staff.invite(owner, { email: STAFF.email, name: STAFF.name, roles: ['staff'] })).token, STAFF);

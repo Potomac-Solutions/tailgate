@@ -114,7 +114,7 @@ Writing test 18 found a bug: an order paid at checkout had no time placed (the k
 
 1. Create a service from this repository. `railway.json` sets the start command and a `/health` check.
 2. Add a **volume** mounted at `/data`, and set `DATA_DIR=/data` so the SQLite file survives deploys.
-3. Set `SESSION_SECRET` to a long random string, and `NODE_ENV=production`.
+3. Set `SESSION_SECRET` to a random string of at least 32 characters (`node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`), and `NODE_ENV=production`.
 4. Keep one replica. Live updates go to pages connected to the same process.
 
 ## Not yet
