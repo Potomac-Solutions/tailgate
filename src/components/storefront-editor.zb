@@ -65,7 +65,7 @@
   @container (max-width: 44rem) { .editor { grid-template-columns: 1fr; } .preview { position: static; order: -1; } }
   :host { display: block; container-type: inline-size; }
 </style>
-<storefront-editor farm="" name-now="" tagline-now="" color-now="#2e5e4e" theme-now="paper" logo-now="" town="">
+<storefront-editor farm="" name-now="" tagline-now="" color-now="#1d1b16" theme-now="paper" logo-now="" town="">
   <div class="editor">
     <div class="fields">
       <text-field label="Farm name" value={name} maxlength={40} required onvaluechange={(event) => (name = event.detail)}></text-field>

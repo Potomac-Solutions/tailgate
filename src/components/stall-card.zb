@@ -7,7 +7,7 @@
   import './user-avatar.zb'
 
   // Colour comes from the farm; the theme sets everything else.
-  const hex = color || '#2e5e4e'
+  const hex = color || '#1d1b16'
 </script>
 <style>
   .stall { display: grid; grid-template-rows: auto 1fr; height: 100%; border-radius: var(--radius); background: var(--card); color: var(--card-foreground); text-decoration: none; overflow: hidden; box-shadow: 0 1px 0 var(--border), 0 0 0 1px var(--border); }
@@ -32,7 +32,7 @@
   a.stall:hover h3 { text-decoration: underline; text-decoration-color: var(--stall); text-decoration-thickness: 3px; text-underline-offset: 0.2em; }
   a.stall:focus-visible { outline: 3px solid var(--stall); outline-offset: 3px; }
 </style>
-<stall-card farm="" name="" tagline="" logo="" color="#2e5e4e" theme="paper" town="" count={0} href="" size="row">
+<stall-card farm="" name="" tagline="" logo="" color="#1d1b16" theme="paper" town="" count={0} href="" size="row">
   <zb-if test={href}>
     <a class="stall" class:banner={size === 'banner'} href={href} data-theme={theme} style={{ '--stall': hex, '--ring': hex }}>
       <div class="awning" aria-hidden="true"></div>

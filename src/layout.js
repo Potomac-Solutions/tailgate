@@ -66,11 +66,11 @@ const STYLE = `
 
   ${fonts.map(([family, weight, src]) => `@font-face { font-family: "${family}"; font-weight: ${weight}; font-display: swap; src: url(${src}) format("woff2"); }`).join('\n  ')}
   :root {
-    --tg-ground: #eef2ef; --tg-ink: #1e2b27; --tg-line: #c5cec9; --tg-pine: #2e5e4e; --tg-amber: #e3a21a; --tg-muted: #56655f;
+    --tg-ground: #f9f6f0; --tg-ink: #1d1b16; --tg-line: #d6cdbd; --tg-pine: #1d1b16; --tg-amber: #f26b1d; --tg-muted: #5e5a52;
     --background: var(--tg-ground); --foreground: var(--tg-ink); --card: #ffffff; --card-foreground: var(--tg-ink);
     --primary: var(--tg-pine); --primary-foreground: #ffffff; --ring: var(--tg-pine); --border: var(--tg-line);
-    --muted: #e2e8e4; --muted-foreground: var(--tg-muted); --secondary: #e2e8e4; --secondary-foreground: var(--tg-ink);
-    --accent: #dfe7e2; --accent-foreground: var(--tg-ink); --radius: 0.5rem;
+    --muted: #ebe4d6; --muted-foreground: var(--tg-muted); --secondary: #ebe4d6; --secondary-foreground: var(--tg-ink);
+    --accent: #e6ddcc; --accent-foreground: var(--tg-ink); --radius: 0.5rem;
     --font-heading: "Barlow Condensed", "Arial Narrow", sans-serif; --font-body: "Source Sans 3", system-ui, sans-serif;
     color-scheme: light;
   }
@@ -85,16 +85,16 @@ const STYLE = `
   .skip { position: absolute; left: 0.5rem; top: -4rem; z-index: 10; padding: 0.6rem 1rem; border-radius: var(--radius); background: var(--tg-amber); color: var(--tg-ink); font-weight: 700; }
   .skip:focus { top: 0.5rem; }
 
-  .site-head { display: flex; align-items: center; gap: 1.5rem; padding: 0.85rem clamp(1rem, 4vw, 2.5rem); background: var(--tg-ink); color: #f1f5f2; }
+  .site-head { display: flex; align-items: center; gap: 1.5rem; padding: 0.85rem clamp(1rem, 4vw, 2.5rem); background: var(--tg-ink); color: #f5f3ee; }
   .wordmark { font-family: var(--font-heading); font-weight: 700; font-size: 1.75rem; letter-spacing: 0.01em; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 0.55rem; }
   .wordmark svg { width: 1.9rem; height: 1.9rem; }
   .site-nav { display: flex; gap: 1.25rem; }
-  .site-nav a { color: #c9d6cf; text-decoration: none; font-weight: 600; }
+  .site-nav a { color: #d4cfc4; text-decoration: none; font-weight: 600; }
   .site-nav a[aria-current] { color: #fff; box-shadow: 0 2px 0 var(--tg-amber); }
   .me { margin-left: auto; display: flex; align-items: center; gap: 0.6rem; font-size: 0.95rem; }
   .me .who { display: grid; line-height: 1.15; }
-  .me .who small { color: #a9bab1; }
-  .me a.switch { color: #c9d6cf; font-size: 0.9rem; }
+  .me .who small { color: #b3ada0; }
+  .me a.switch { color: #d4cfc4; font-size: 0.9rem; }
   a.button-light { display: inline-block; padding: 0.45rem 0.9rem; border-radius: var(--radius); background: var(--tg-amber); color: var(--tg-ink); font-weight: 700; text-decoration: none; }
 
   main.page { width: min(72rem, 100% - 2 * clamp(1rem, 4vw, 2.5rem)); margin: 0 auto; padding: 2rem 0 4rem; display: grid; gap: 2.75rem; }
@@ -111,12 +111,12 @@ const STYLE = `
   .landing > section:not(.hero, .band) { padding-top: clamp(2.5rem, 6vw, 4.5rem); }
   .landing .said { padding-top: 1.25rem; }
   .kicker { margin: 0 0 0.6rem; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--tg-pine); }
-  a.go { display: inline-flex; align-items: center; justify-content: center; min-height: 3rem; padding: 0.7rem 1.5rem; border-radius: 999px; background: var(--tg-amber); color: var(--tg-ink); font-weight: 700; font-size: 1.05rem; text-decoration: none; transition: transform 0.15s, background-color 0.15s; }
-  a.go:hover { background: #f0b432; transform: translateY(-1px); }
+  a.go { display: inline-flex; align-items: center; justify-content: center; min-height: 3rem; padding: 0.7rem 1.5rem; border-radius: 0.5rem; background: var(--tg-amber); color: var(--tg-ink); font-weight: 700; font-size: 1.05rem; text-decoration: none; transition: transform 0.15s, background-color 0.15s; }
+  a.go:hover { background: #ff8a45; transform: translateY(-1px); }
   a.go.ghost { background: transparent; color: #fff; box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.75); }
   a.go.ghost:hover { background: rgb(255 255 255 / 0.14); }
   a.go.pine { background: var(--tg-pine); color: #fff; }
-  a.go.pine:hover { background: #244c3f; }
+  a.go.pine:hover { background: #000000; }
 
   .hero { position: relative; isolation: isolate; display: grid; align-content: end; min-height: min(84vh, 46rem); color: #fff; background: var(--tg-ink); overflow: hidden; }
   .hero.short { min-height: min(46vh, 24rem); }
@@ -125,10 +125,10 @@ const STYLE = `
   .hero .wrap { padding-block: clamp(3rem, 9vw, 6rem) clamp(2rem, 5vw, 3.5rem); }
   .hero .kicker { color: var(--tg-amber); }
   main.page .hero h1 { font-size: clamp(3rem, 9vw, 6.5rem); line-height: 0.92; text-transform: uppercase; max-width: 13ch; }
-  .hero h1 em { display: block; font-style: normal; color: var(--tg-amber); }
-  .hero .lede { color: #e6eeea; font-size: clamp(1.15rem, 2.2vw, 1.4rem); max-width: 34rem; margin-top: 1.1rem; }
+  .hero h1 em { display: table; font-style: normal; margin-top: 0.14em; padding: 0.1em 0.22em 0.04em; background: var(--tg-amber); color: var(--tg-ink); rotate: -1.5deg; text-shadow: none; }
+  .hero .lede { color: #ece9e2; font-size: clamp(1.15rem, 2.2vw, 1.4rem); max-width: 34rem; margin-top: 1.1rem; }
   .hero .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.75rem; }
-  .hero .also { margin: 1.1rem 0 0; color: #d5e0da; }
+  .hero .also { margin: 1.1rem 0 0; color: #dcd7cc; }
   .hero-strip { border-top: 1px solid rgb(255 255 255 / 0.2); background: rgb(15 26 22 / 0.6); backdrop-filter: blur(6px); }
   .hero-strip .wrap { display: flex; flex-wrap: wrap; gap: 0.3rem 2.5rem; padding-block: 0.9rem; font-weight: 600; }
   .hero-strip p { margin: 0; }
@@ -140,7 +140,7 @@ const STYLE = `
   .steps p { margin: 0; color: var(--tg-muted); }
 
   .split { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr)); gap: clamp(1.5rem, 5vw, 4rem); align-items: center; }
-  .split .pic { border-radius: calc(var(--radius) * 2); overflow: hidden; aspect-ratio: 3 / 2; background: var(--muted); box-shadow: 0 30px 60px -35px rgb(30 43 39 / 0.7); }
+  .split .pic { border-radius: calc(var(--radius) * 2); overflow: hidden; aspect-ratio: 3 / 2; background: var(--muted); box-shadow: 0 30px 60px -35px rgb(29 27 22 / 0.7); }
   .split .pic img { display: block; width: 100%; height: 100%; object-fit: cover; }
   main.page .split h2 { font-size: clamp(2.25rem, 5vw, 3.5rem); text-transform: uppercase; }
   .split p { font-size: 1.15rem; color: var(--tg-muted); max-width: 34rem; }
@@ -155,7 +155,7 @@ const STYLE = `
   .join { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(17rem, 100%), 1fr)); gap: 1.25rem; margin-top: 1.75rem; }
   .join div { display: grid; gap: 0.6rem; align-content: start; justify-items: start; padding: 1.4rem; border-radius: var(--radius); background: rgb(255 255 255 / 0.1); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.22); backdrop-filter: blur(4px); }
   .join h3 { margin: 0; font-family: var(--font-heading); font-size: 1.8rem; line-height: 1; }
-  .join p { margin: 0; color: #e0e9e4; }
+  .join p { margin: 0; color: #e6e2d9; }
   @media (prefers-reduced-motion: reduce) { .go { transition: none; } }
 
   /* Dashboards fill the window; the Zubra UI shell scrolls inside itself. */
@@ -181,7 +181,7 @@ const STYLE = `
   }
 `;
 
-const MARK = `<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="12" width="28" height="12" rx="2" fill="#e3a21a"/><path d="M6 12V7h14l6 5" fill="none" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/><circle cx="9" cy="25" r="3.5" fill="#1e2b27" stroke="#fff" stroke-width="2"/><circle cx="23" cy="25" r="3.5" fill="#1e2b27" stroke="#fff" stroke-width="2"/></svg>`;
+const MARK = `<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="12" width="28" height="12" rx="2" fill="#f26b1d"/><path d="M6 12V7h14l6 5" fill="none" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/><circle cx="9" cy="25" r="3.5" fill="#1d1b16" stroke="#fff" stroke-width="2"/><circle cx="23" cy="25" r="3.5" fill="#1d1b16" stroke="#fff" stroke-width="2"/></svg>`;
 
 const SCRIPT = (done) => `
   <script type="module">
