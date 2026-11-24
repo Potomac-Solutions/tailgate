@@ -16,6 +16,6 @@
   // The document holds the picture; the page shows it from the server's address for it.
   const logoUrl = logo ? '/logos/' + farm + '.webp?v=' + logo.length : ''
 </script>
-<farm-stall farm="" name-now="" tagline-now="" color-now="#2e5e4e" theme-now="paper" logo-now="" town="" count={0} href="" size="row">
+<farm-stall farm="" name-now="" tagline-now="" color-now="#1d1b16" theme-now="paper" logo-now="" town="" count={0} href="" size="row">
   <stall-card farm={farm} name={name} tagline={tagline} color={color} theme={theme} logo={logoUrl} town={town} count={count} href={href} size={size}></stall-card>
 </farm-stall>

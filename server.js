@@ -188,10 +188,10 @@ export async function createApp({ db = join(process.env.DATA_DIR ?? here, 'tailg
   }
 
   /** A dashboard, in `color`: the farm's own for farmers, Tailgate's amber for drivers. */
-  function app(req, res, url, { title, p, shell, color = '#2e5e4e', chart = color }) {
+  function app(req, res, url, { title, p, shell, color = '#1d1b16', chart = color }) {
     const { banner, done } = outcome(req, res, p, url);
     const toasts = p.render('toast-region', {});
-    const palette = `--primary:${color};--ring:${color};--primary-foreground:${inkOn(color)};--chart-1:${chart};--chart-2:color-mix(in oklch, ${chart} 45%, white);--chart-3:#2e5e4e;--chart-4:#e3a21a;--chart-5:#7d8c86`;
+    const palette = `--primary:${color};--ring:${color};--primary-foreground:${inkOn(color)};--chart-1:${chart};--chart-2:color-mix(in oklch, ${chart} 45%, white);--chart-3:#1d1b16;--chart-4:#f26b1d;--chart-5:#7d8c86`;
     const html = appLayout({ title, shell, banner, done, palette, actionsScript: actions.script() }).replace('<toast-region></toast-region>', toasts);
     send(res, 200, p.finish(html));
   }
@@ -619,7 +619,7 @@ ${past.length ? `<section><div class="section-head"><h2>Earlier orders</h2></div
         if (person?.role !== 'driver') return page(req, res, url, { title: 'Drive', person, p, body: ask(p, 'driver', 'claim deliveries') });
         const section = drivePage[1] ?? 'deliveries';
         const content = section === 'earnings' ? earnings(p, person) : deliveries(p, person);
-        return app(req, res, url, { title: section === 'earnings' ? 'Earnings' : 'Deliveries', p, chart: '#e3a21a', shell: driveShell(p, person, section, section === 'earnings' ? 'Earnings' : 'Deliveries', content) });
+        return app(req, res, url, { title: section === 'earnings' ? 'Earnings' : 'Deliveries', p, chart: '#f26b1d', shell: driveShell(p, person, section, section === 'earnings' ? 'Earnings' : 'Deliveries', content) });
       }
 
       send(res, 404, 'Not found');
