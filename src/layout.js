@@ -181,7 +181,7 @@ const STYLE = `
   }
 `;
 
-const MARK = `<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="12" width="28" height="12" rx="2" fill="#f26b1d"/><path d="M6 12V7h14l6 5" fill="none" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/><circle cx="9" cy="25" r="3.5" fill="#1d1b16" stroke="#fff" stroke-width="2"/><circle cx="23" cy="25" r="3.5" fill="#1d1b16" stroke="#fff" stroke-width="2"/></svg>`;
+const MARK = `<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 30c0-9-5-14-14-14 0 9 5 14 14 14zM32 30c0-11 5-17 15-18 0 11-5 17-15 18z" fill="#7bb83a"/><rect x="5" y="30" width="54" height="24" rx="5" fill="#f26b1d"/><rect x="24" y="39" width="16" height="6" rx="3" fill="#1d1b16"/><path d="M11 36v12M53 36v12" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>`;
 
 const SCRIPT = (done) => `
   <script type="module">
