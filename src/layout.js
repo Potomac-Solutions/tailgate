@@ -103,7 +103,8 @@ const STYLE = `
   .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
   .section-head p { margin: 0; color: var(--tg-muted); }
   .stack { display: grid; gap: 1rem; }
-  .site-foot { padding: 2rem clamp(1rem, 4vw, 2.5rem); color: var(--tg-muted); font-size: 0.9rem; border-top: 1px solid var(--tg-line); }
+  .site-foot::before { content: ""; position: absolute; z-index: -1; right: -1rem; bottom: -2.5rem; width: 9rem; aspect-ratio: 1; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 30c0-9-5-14-14-14 0 9 5 14 14 14zM32 30c0-11 5-17 15-18 0 11-5 17-15 18z' fill='%237bb83a'/%3E%3Crect x='5' y='30' width='54' height='24' rx='5' fill='%23f26b1d'/%3E%3Crect x='24' y='39' width='16' height='6' rx='3' fill='%231d1b16'/%3E%3C/svg%3E") center / contain no-repeat; opacity: 0.18; rotate: -8deg; }
+  .site-foot { position: relative; overflow: hidden; isolation: isolate; padding: 2rem clamp(1rem, 4vw, 2.5rem); color: var(--tg-muted); font-size: 0.9rem; border-top: 1px solid var(--tg-line); }
 
   /* The market's landing page: full-width sections, each with its own inner column. */
   main.page.landing { width: 100%; padding: 0 0 4rem; gap: 0; }
@@ -125,7 +126,8 @@ const STYLE = `
   .hero .wrap { padding-block: clamp(3rem, 9vw, 6rem) clamp(2rem, 5vw, 3.5rem); }
   .hero .kicker { color: var(--tg-amber); }
   main.page .hero h1 { font-size: clamp(3rem, 9vw, 6.5rem); line-height: 0.92; text-transform: uppercase; max-width: 13ch; }
-  .hero h1 em { display: table; font-style: normal; margin-top: 0.14em; padding: 0.1em 0.22em 0.04em; background: var(--tg-amber); color: var(--tg-ink); rotate: -1.5deg; text-shadow: none; }
+  .hero h1 em::before { content: ""; position: absolute; left: 0.55em; bottom: 100%; width: 0.95em; aspect-ratio: 31 / 20; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='17 11 31 20'%3E%3Cpath d='M32 30c0-9-5-14-14-14 0 9 5 14 14 14zM32 30c0-11 5-17 15-18 0 11-5 17-15 18z' fill='%237bb83a'/%3E%3C/svg%3E") center / contain no-repeat; translate: 0 0.08em; }
+  .hero h1 em { position: relative; display: table; font-style: normal; margin-top: 0.6em; padding: 0.1em 0.22em 0.04em; background: var(--tg-amber); color: var(--tg-ink); rotate: -1.5deg; text-shadow: none; }
   .hero .lede { color: #ece9e2; font-size: clamp(1.15rem, 2.2vw, 1.4rem); max-width: 34rem; margin-top: 1.1rem; }
   .hero .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.75rem; }
   .hero .also { margin: 1.1rem 0 0; color: #dcd7cc; }
