@@ -38,7 +38,7 @@ Tailgate is a showcase for [Zubra](https://github.com/zubra-js/zubra), built for
 | `@zubra/sync` | A farmer's stock and storefront live on their device first, so they can be edited with no signal and sync on reconnect. Every order's status is a live document, and so is every farm's stall, so pages follow changes without reloading |
 | Presence (`@zubra/sync`) | The shopper sees when the driver has their order open |
 | `@zubra/actions` | Adding to the cart, claiming a delivery, picking up and delivering are plain form posts to `'use server'` functions. They work with JavaScript off, and their code never reaches the browser |
-| [Potomac kit](https://github.com/Potomac-Solutions/kit) (private) | The commerce rules: `catalog` (what's for sale and how many are left), `cart`, `checkout` (stock from every farm taken at once, one charge, one order per farm), `pay` (charged at most once; its test provider), and `stages` (placed → claimed → picked up → delivered). `cart-panel` and `checkout-form` are the kit's components, loaded from the package (`createZubra({ packages })`) |
+| Potomac kit (private) | The commerce rules: `catalog` (what's for sale and how many are left), `cart`, `checkout` (stock from every farm taken at once, one charge, one order per farm), `pay` (charged at most once; its test provider), and `stages` (placed → claimed → picked up → delivered). `cart-panel` and `checkout-form` are the kit's components, loaded from the package (`createZubra({ packages })`) |
 | [Zubra UI](https://github.com/zubra-js/zubra-ui) | The dashboards, charts, controls and themes: `dashboard-shell`, `stat-card`, `line-chart`, `donut-chart`, `bar-chart`, `kanban-column`, `step-indicator`, `status-badge`, `quantity-stepper`, `money-input`, `text-field`, `file-drop`, `color-swatches`, `choice-cards`, `segmented-control`, `user-avatar`, `action-button`, `alert-banner`, `empty-state`, `toast-region`, and five themes farmers choose from (Paper, Zinc, Candy, Midnight, Terminal) |
 
 The rule behind the split: **Sync for what one person owns, Actions for what two people could both want.** A farmer's price and colours are theirs alone, so last-writer-wins is right. The last crate of squash, or a delivery two drivers tap at once, has to be decided by the server: a delivery is an action, and the squash is decided at checkout, where the whole cart's stock is taken in one step.
@@ -65,7 +65,7 @@ Add another the same way, then import it from the component that uses it (`impor
 
 ## Run it
 
-Needs Node 26. `npm install` fetches the Potomac kit from its private GitHub repository, so it needs an account with read access to `Potomac-Solutions/kit`.
+Needs Node 26. `npm install` fetches the Potomac kit from its private GitHub repository, so it needs an account with read access to the private Potomac kit repository.
 
 ```sh
 npm install
