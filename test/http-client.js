@@ -1,6 +1,7 @@
 // A plain HTTP client with a cookie jar, for the payment tests.
 export async function served(server) {
-  await new Promise((done) => server.listen(0, done));
+  // A second visitor to the same server: its own cookies, the same address.
+  if (!server.listening) await new Promise((done) => server.listen(0, done));
   const base = `http://localhost:${server.address().port}`;
   const jar = new Map();
   const call = async (path, init = {}) => {
