@@ -69,6 +69,11 @@ function words(answer) {
     declined: 'That card was declined. Try another.',
     'in-progress': 'That order is already going through.',
     'not-yours': 'That checkout has expired. Try again.',
+    'not-paid': 'That payment didn’t go through, so nothing was charged. Your cart is still here.',
+    cancelled: 'Nothing was charged. Your cart is still here.',
+    'not-set-up': 'Paying online isn’t working right now. Try again later.',
+    'provider-failed': 'The payment service didn’t answer. Try again in a minute.',
+    'paid-after-cancel': 'That payment came through after the order was let go. It will be refunded.',
   }[answer.error];
   return { error: said ?? 'That didn’t go through. Try again.' };
 }
@@ -79,7 +84,7 @@ const CHECKOUT_KEY = /^c[a-z0-9]{6,24}$/;
 const money = (cents) => `$${(cents / 100).toFixed(2)}`;
 const toCents = (price) => Math.round(Number(price) * 100);
 
-export async function createMarket({ db = ':memory:' } = {}) {
+export async function createMarket({ db = ':memory:', provider = testProvider() } = {}) {
   const inner = await sqliteLog(db);
   const docs = ledger();
   const clock = serverClock();
@@ -187,11 +192,15 @@ export async function createMarket({ db = ':memory:' } = {}) {
   // test provider: no money moves, and the checkout says so.
   const cart = createCart({ store, catalog: catalogue });
   const fees = ({ lines }) => [...new Set(lines.map((line) => farmOf(line.item)))].map((farm) => ({ label: `Delivery from ${farmName(farm)}`, cents: DELIVERY_CENTS, group: farm }));
-  const checkout = createCheckout({
+  // Paid on the platform's page (PayPal, for this market): `wanted` keeps a let-go checkout from
+  // being taken, which matters for PayPal, which takes the money when it's asked.
+  let checkout;
+  const pay = createPay({ provider, store, wanted: (id) => checkout.wanted(id) });
+  checkout = createCheckout({
     store,
     catalog: catalogue,
     cart,
-    pay: createPay({ provider: testProvider(), store }),
+    pay,
     stages: delivery,
     group: (line) => farmOf(line.item),
     fees,
@@ -422,7 +431,7 @@ export async function createMarket({ db = ':memory:' } = {}) {
      * Check out the whole cart: stock from every farm taken at once, one charge, then one order
      * per farm for the drivers to claim. All or nothing.
      */
-    async checkout(person, form) {
+    async checkout(person, form, { back = '', cancel = '' } = {}) {
       if (person?.role !== 'customer') return { error: 'Choose a shopper to buy.' };
       const key = String(form.get('checkout') ?? '');
       if (!CHECKOUT_KEY.test(key)) return { error: 'That checkout has expired. Try again.' };
@@ -432,9 +441,38 @@ export async function createMarket({ db = ':memory:' } = {}) {
         method: { card: String(form.get('card') ?? '') },
         fields: { customer: person.id, address, driver: '', driverName: '', placed: Date.now() },
         description: 'Tailgate order',
+        back,
+        cancel,
       });
+      if (done.paying && !done.paid) return { ok: true, key, paying: true, pay: done.pay };
+      if (done.paying) return this.finish(key);
       return done.ok ? { ok: true, orders: done.orders } : words(done);
     },
+
+    /** Back from the platform's page, or its webhook: once it's paid, one order per farm. Not paid: the stock goes back. */
+    async finish(key, { told } = {}) {
+      if (!CHECKOUT_KEY.test(key) || !store.get('checkouts', key)) return { error: 'That checkout has expired. Try again.' };
+      const done = await checkout.finish(key, { told });
+      if (done.error === 'not-paid') {
+        await checkout.cancel(store.get('checkouts', key).owner, key);
+        return words(done);
+      }
+      return done.ok ? { ok: true, orders: done.orders } : words(done);
+    },
+
+    /** The webhook from the platform: `{ headers, body, url }`. */
+    heard: (request) => checkout.heard(request),
+
+    /** Backed out of the platform's page: the stock goes back, unless it was paid meanwhile. */
+    async cancel(person, key) {
+      if (!person || !CHECKOUT_KEY.test(key)) return { error: 'That checkout has expired. Try again.' };
+      const done = await checkout.cancel(person.id, key);
+      if (done.ok && done.orders) return { ok: true, orders: done.orders };
+      return done.error ? words(done) : words({ error: 'cancelled' });
+    },
+
+    /** Checkouts left on the platform's page: run every few minutes. */
+    sweep: () => checkout.sweep(),
 
     /** A driver claims an open delivery. Exactly one driver wins a race. */
     async claim(person, formData) {

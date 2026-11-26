@@ -63,6 +63,22 @@ npx shadcn add $R/theme.json $R/themes/paper.json $R/themes/zinc.json $R/themes/
 
 Add another the same way, then import it from the component that uses it (`import './modal-dialog.zb'`).
 
+## Paying
+
+The customer pays on **PayPal**: the card is typed there, never here. Checkout holds the stock from every farm while they're there, and makes one order per farm once PayPal says it's paid. Backing out puts the stock back, and the five-minute sweep does the same for checkouts left on PayPal's page. PayPal takes the money when the customer comes back (or the webhook comes), not on its own page.
+
+Until PayPal's settings are on the server, the kit's test page stands in. It is plainly a test, with no card and no money, and makes the same trip there and back. To use PayPal's test mode, set these on Railway:
+
+| Setting | What |
+| --- | --- |
+| `PAY_PAYPAL_CLIENT`, `PAY_PAYPAL_SECRET` | A sandbox REST app's client id and secret (developer.paypal.com → Apps & Credentials, Sandbox) |
+| `PAY_PAYPAL_SANDBOX` | `1` |
+| `PAY_PAYPAL_WEBHOOK_ID` | Optional: a webhook for `CHECKOUT.ORDER.APPROVED` and `PAYMENT.CAPTURE.COMPLETED` at `https://tailgate.potomac.solutions/pay/webhook`, and its id |
+
+`PAY_PROVIDER` picks another platform instead (`stripe`, `square`, `paypal`, `helcim`), with its own settings as in the kit's README. Nothing else changes. Keep the public demo on test keys: with live ones, real money moves.
+
+`SESSION_SECRET` must be at least 32 characters now (the kit refuses a shorter one).
+
 ## Run it
 
 Needs Node 26. `npm install` fetches the Potomac kit from its private GitHub repository, so it needs an account with read access to the private Potomac kit repository.
@@ -82,7 +98,7 @@ Start at `/start` and pick who you are, or make a shopper account. A fresh marke
 `npm install`, then `npm start`, and open http://localhost:3000. Use two browser windows (one private), so you can be two people at once.
 
 1. **Shop.** At `/start`, shop as Rosa. Add something from Hilltop Farm and something from Meadow Creek. The cart shows one delivery fee per farm.
-2. **Pay once.** Check out with any card number (`4000 0000 0000 0002` is declined, to see that). My orders shows one order per farm, each waiting for a driver.
+2. **Pay once.** Check out, and pay on PayPal's page (until PayPal is set up, the kit's test page: press **Pay**, or go back without paying and the cart stays). My orders shows one order per farm, each waiting for a driver.
 3. **Deliver.** In the other window, drive as Jules. Claim one of Rosa's orders, then press Picked up and Delivered. Rosa's page follows each step without a reload, and shows when Jules has the order open.
 4. **Sell.** Switch to a farmer (Luis at Meadow Creek). Change stock on the Stock page, even offline: the market has it once you reconnect. Restyle the stall on Storefront, and the market changes as you do.
 5. **An account.** **Sign in**, or make an account, and shop as yourself: checkout fills in your name and email, and your orders are there on any device. **Forgot your password?** sends a one-time link (to the admin's **Outbox**, and the server's log).
@@ -129,7 +145,7 @@ For a real business, leave out `DEMO`, set `DATA_DIR` to a mounted volume, start
 2. With JavaScript, the quantity stepper sets how many, the cart and the order follow, with toasts.
 3. Two shoppers both have the last item in their carts and check out at once; one gets it, the other is told it sold out and their cart marks it.
 4. A cart from two farms is paid once and becomes one order per farm, each with its own delivery fee; the same checkout sent twice is still one; stock comes off both farms; each farm and the drivers see their orders.
-5. A declined card takes nothing: the stock goes back and the cart stays. A checkout key the server didn't make, and a post another site sends, are refused.
+5. Backing out of the payment page takes nothing: the stock goes back and the cart stays. The same cart on PayPal (faked) is approved there and taken once on the way back; backed out first, PayPal is never told to take it. A checkout key the server didn't make, and a post another site sends, are refused.
 6. A driver claims an order. The shopper's page shows the driver, then that the driver has it open, then "On the way" and "Delivered", with no reload. A second driver's late claim gets a message.
 7. A farmer edits stock offline. The market shows the old stock until they reconnect, then the new. A new row reaches the market too.
 8. Only what a farm lists, named, priced and counted, is for sale: a listing off the farm's list, or with its count cleared, isn't.
@@ -160,7 +176,6 @@ Writing test 18 found a bug: an order paid at checkout had no time placed (the k
 ## Not yet
 
 - Accounts for farmers and drivers. Shoppers can make one; farmers and drivers are still picked on the start page, and a signed cookie holds the choice.
-- Real payments. Checkout uses the kit's test provider: any card works except 4000 0000 0000 0002, which is declined.
 - Maps. Drivers get directions links to the farm and the door. An in-app map, using Garrett County Adventures as a reference, is next.
 - The market's farm filter and product cards show a farm's new name after a reload; its stall updates live.
 - Read rules. Anyone signed in can follow any order's live status. (Accounts, sessions and tokens are the exception: no page reads them.)
