@@ -9,7 +9,7 @@
     "dev": "node --watch server.js",
     "seed": "node bin/seed.js",
     "demo": "node bin/seed.js --fresh && node server.js",
-    "test": "node --test test/app.test.js test/admin.test.js",
+    "test": "node --test test/app.test.js test/admin.test.js test/payments.test.js",
     "design-check": "node scripts/design-check.js"
   },
   "dependencies": {
