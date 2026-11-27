@@ -16,6 +16,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createZubra } from '@zubra/server';
 import { createActions } from '@zubra/actions';
+import { createPayments } from './src/payments.js';
 import { createMarket, THEMES } from './src/market.js';
 import { money } from './src/account.js';
 import { sessions } from './src/session.js';
@@ -88,13 +89,15 @@ function assets() {
   return files;
 }
 
-export async function createApp({ db = join(process.env.DATA_DIR ?? here, 'tailgate.db'), cache = true, secret = process.env.SESSION_SECRET, staffCost, now = Date.now , demo = process.env.DEMO === '1' } = {}) {
+export async function createApp({ db = join(process.env.DATA_DIR ?? here, 'tailgate.db'), cache = true, secret = process.env.SESSION_SECRET, staffCost, now = Date.now , demo = process.env.DEMO === '1', payEnv = process.env, payFetch } = {}) {
   if (!secret) {
     if (process.env.NODE_ENV === 'production') throw new Error('Set SESSION_SECRET.');
     // The kit signs nothing with a secret under 32 characters.
     secret = 'tailgate-development-only-not-a-secret';
   }
-  const market = await createMarket({ db });
+  // PayPal is this market's platform; until its settings are on the server, the kit's test page stands in.
+  const payments = createPayments({ env: payEnv, intended: 'paypal', fetch: payFetch });
+  const market = await createMarket({ db, provider: payments.provider });
   const session = sessions({ secret, people: market.people });
   const production = process.env.NODE_ENV === 'production';
   const cost = staffCost ? { cost: staffCost } : {};
@@ -433,8 +436,29 @@ export async function createApp({ db = join(process.env.DATA_DIR ?? here, 'tailg
           const done = await market.changeCart(person, form);
           return back(res, done.error ? `/cart?problem=${encodeURIComponent(done.error)}` : '/cart');
         }
-        const done = await market.checkout(person, form);
+        const done = await market.checkout(person, form, { back: `${origin(req)}/pay/back`, cancel: `${origin(req)}/pay/cancel` });
+        if (done.paying) return payments.send(res, done.pay, { cancel: `/pay/cancel?checkout=${done.key}`, fields: { checkout: done.key } });
         return back(res, done.error ? `/checkout?problem=${encodeURIComponent(done.error)}` : '/orders?done=placed');
+      }
+
+      // Paying on the platform's page: the test page, the way back, backing out, Helcim's frame and the webhook.
+      if (await payments.testRoute(req, res, url, readForm)) return;
+      if ((url.pathname === '/pay/back' || url.pathname === '/pay/cancel') && req.method === 'GET') {
+        const key = url.searchParams.get('checkout') ?? '';
+        const done = url.pathname === '/pay/back' ? await market.finish(key) : await market.cancel(person, key);
+        return back(res, done.error ? `/checkout?problem=${encodeURIComponent(done.error)}` : '/orders?done=placed');
+      }
+      if (url.pathname === '/pay/told' && req.method === 'POST') {
+        const form = await readForm(req);
+        if (!form) return send(res, 413, 'Too large');
+        const done = await market.finish(String(form.get('checkout') ?? ''), { told: String(form.get('told') ?? '') });
+        return back(res, done.error ? `/checkout?problem=${encodeURIComponent(done.error)}` : '/orders?done=placed');
+      }
+      if (url.pathname === '/pay/webhook' && req.method === 'POST') {
+        const request = await payments.webhook(req, process.env.PUBLIC_URL || origin(req));
+        if (!request) return send(res, 413, 'Too large');
+        const heard = await market.heard(request);
+        return send(res, heard.error === 'bad-signature' ? 401 : 200, heard.error === 'bad-signature' ? 'Bad signature' : 'ok');
       }
 
       if (url.pathname === '/who' && req.method === 'POST') {
@@ -578,7 +602,7 @@ ${problem ? render(p, 'alert-banner', { variant: 'danger' }, { default: escape(p
           person,
           p,
           body: `<section><h1>Checkout</h1><p class="lede">One payment for everything. Each farm’s order goes out to the drivers as soon as it’s paid.</p></section>
-<section class="checkout">${p.render('checkout-form', { cart: view, fees: view.fees, place: '/checkout', checkout: market.checkoutKey(), delivery: true, problem, testMode: true, name: person.name, email: person.email ?? '', address: person.address })}<p><a href="/cart">Back to your cart</a></p></section>`,
+<section class="checkout">${p.render('checkout-form', { cart: view, fees: view.fees, place: '/checkout', checkout: market.checkoutKey(), delivery: true, problem, ...payments.form, name: person.name, email: person.email ?? '', address: person.address })}<p><a href="/cart">Back to your cart</a></p></section>`,
         });
       }
 
@@ -630,8 +654,11 @@ ${past.length ? `<section><div class="section-head"><h2>Earlier orders</h2></div
     }
   });
 
-  server.on('close', () => market.close());
-  return Object.assign(server, { demo, market, customers, staff, sent: mail.sent });
+  // Checkouts left on the platform's page give their stock back.
+  const sweeping = setInterval(() => market.sweep().catch((error) => console.error(error)), 5 * 60_000);
+  sweeping.unref();
+  server.on('close', () => (clearInterval(sweeping), market.close()));
+  return Object.assign(server, { demo, market, payments, customers, staff, sent: mail.sent });
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

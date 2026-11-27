@@ -62,7 +62,19 @@ async function as(who) {
     /** A plain form post (the cart's and checkout's routes): where it sends the browser. */
     form: async (path, form) => {
       const response = await context.request.post(`${base}${path}`, { form, maxRedirects: 0 });
-      return { status: response.status(), location: plain(response.headers().location ?? ''), raw: response.headers().location ?? '' };
+      const raw = response.headers().location ?? '';
+      if (!raw.startsWith('/pay/test')) return { status: response.status(), location: plain(raw), raw };
+      // The test payment page, standing in for PayPal's: "Pay", or for the declining card "Go
+      // back without paying", then the way back.
+      const page = await (await context.request.get(`${base}${raw}`)).text();
+      assert.match(page, /Once PayPal is set up, this page is PayPal’s own\./);
+      const ref = new URL(raw, base).searchParams.get('ref');
+      const next = String(form.card ?? '').replace(/\D/g, '') === '4000000000000002'
+        ? /href="([^"]+)">Go back without paying/.exec(page)[1].replaceAll('&amp;', '&')
+        : (await context.request.post(`${base}/pay/test`, { form: { ref, answer: 'pay' }, maxRedirects: 0 })).headers().location;
+      const back = await context.request.get(new URL(next, base).href, { maxRedirects: 0 });
+      const went = back.headers().location ?? '';
+      return { status: back.status(), location: plain(went), raw: went };
     },
     close: () => context.close(),
   };
@@ -95,8 +107,10 @@ test('without JavaScript: the market is complete and an order goes through', asy
   assert.match(await page.textContent('main'), /Added to your cart/);
   await page.click('cart-panel a:has-text("Check out")');
   await page.waitForURL(/\/checkout/);
-  await page.fill('checkout-form input[name=card]', '4242 4242 4242 4242');
+  assert.equal(await page.locator('checkout-form input[name=card]').count(), 0, 'no card is typed here');
   await page.click('checkout-form button[type=submit]');
+  await page.waitForURL(/\/pay\/test\?ref=/);
+  await page.click('button:has-text("Pay $")');
   await page.waitForURL(/\/orders/);
   assert.match(await page.textContent('order-card:has-text("Beeswax candles")'), /1 pair · Beeswax candles/);
   assert.match(await page.textContent('main'), /Order placed/, 'the result is said without JavaScript too');
@@ -118,8 +132,9 @@ test('with JavaScript: the stepper sets how many, and the order lands', async ()
   await page.locator('cart-panel output', { hasText: '3' }).waitFor();
   await page.click('cart-panel a:has-text("Check out")');
   await page.waitForURL(/\/checkout/);
-  await page.fill('checkout-form input[name=card]', '4242 4242 4242 4242');
   await page.click('checkout-form button[type=submit]');
+  await page.waitForURL(/\/pay\/test\?ref=/);
+  await page.click('button:has-text("Pay $")');
   await page.waitForURL(/\/orders/);
   await page.locator('order-card', { hasText: '3 half peck · Honeycrisp apples' }).waitFor();
   await page.locator('toast-region', { hasText: 'Order placed' }).waitFor({ timeout: 5000 });
@@ -189,17 +204,17 @@ test('a cart from two farms is paid once, and goes out as one order per farm', a
   await sam.close();
 });
 
-test('a declined card takes nothing: the stock and the cart stay as they were', async () => {
+test('backing out of the payment page takes nothing: the stock and the cart stay as they were', async () => {
   const rosa = await as('rosa');
   const before = await rosa.get('/');
   assert.equal((await rosa.post('/_zb/action/produce-card/add', { farm: 'bearrun', item: 'cider', qty: '2' })).status, 204);
   const declined = await rosa.form('/checkout', await checkoutForm(rosa, '4000 0000 0000 0002'));
-  assert.equal(declined.location, '/checkout?problem=That card was declined. Try another.');
-  assert.match(await rosa.get(declined.raw), /That card was declined/, 'the redirect shows the message');
-  assert.doesNotMatch(await rosa.get(`/checkout?problem=${encodeURIComponent('That card was declined. Call 555-0100.')}`), /555-0100/, 'words typed into a link don’t');
+  assert.equal(declined.location, '/checkout?problem=Nothing was charged. Your cart is still here.');
+  assert.match(await rosa.get(declined.raw), /Nothing was charged/, 'the redirect shows the message');
+  assert.doesNotMatch(await rosa.get(`/checkout?problem=${encodeURIComponent('Nothing was charged. Call 555-0100.')}`), /555-0100/, 'words typed into a link don’t');
   const qty = (html) => /item="cider"[^>]*qty="(\d+)"/.exec(html)[1];
   assert.equal(qty(await rosa.get('/')), qty(before), 'the stock went back');
-  assert.match(await rosa.get('/cart'), /<li data-item="bearrun\/cider"/, 'still in the cart, to try another card');
+  assert.match(await rosa.get('/cart'), /<li data-item="bearrun\/cider"/, 'still in the cart, to try again');
   // A key this server didn't make, and a post another site sends, change nothing.
   assert.equal((await rosa.form('/checkout', { ...(await checkoutForm(rosa)), checkout: 'x/../y' })).location, '/checkout?problem=That checkout has expired. Try again.');
   const context = await browser.newContext();
